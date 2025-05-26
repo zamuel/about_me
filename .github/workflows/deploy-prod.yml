@@ -1,0 +1,26 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests (placeholder)
+        run: echo "✅ Running tests..."
+
+      - name: Lint code (placeholder)
+        run: echo "✅ Linting code..."
+
+  deploy:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Production
+        run: echo "🚀 Deploying to Production..."

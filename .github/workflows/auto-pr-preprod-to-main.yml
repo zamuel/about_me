@@ -1,0 +1,24 @@
+name: Auto PR from preprod to main
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - preprod
+
+jobs:
+  create-pr:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create PR preprod → main
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "preprod"
+          destination_branch: "main"
+          pr_title: "Auto PR: Promote preprod to main"
+          pr_body: |
+            This PR was automatically created after merging into preprod.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reviewers: zamuel
