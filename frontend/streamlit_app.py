@@ -1,27 +1,62 @@
 import streamlit as st
-from backend import query
+import snowflake.connector
+import os
+from dotenv import load_dotenv
 
-st.set_page_config(page_title="Recruiter Assistant", page_icon="🧠")
+load_dotenv()
 
-st.title("🤖 Ask About the Candidate")
+st.set_page_config(page_title="RAG - Snowflake Arctic", layout="wide")
+st.title("🔍 RAG: Consulta tu información profesional")
 
-st.markdown(
-    """
-    This assistant helps recruiters find relevant information about the candidate using natural language.
-    """
-)
+query = st.text_input("Haz una pregunta sobre tu experiencia, proyectos, educación, etc.")
 
-# Input
-user_question = st.text_input("Ask a question (e.g. 'What are your main skills?')")
+if query:
+    conn = snowflake.connector.connect(
+        user=os.getenv("SNOWFLAKE_USER"),
+        password=os.getenv("SNOWFLAKE_PASSWORD"),
+        account=os.getenv("SNOWFLAKE_ACCOUNT"),
+        warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
+        database=os.getenv("SNOWFLAKE_DATABASE"),
+        schema=os.getenv("SNOWFLAKE_SCHEMA")
+    )
+    cursor = conn.cursor()
 
-if user_question:
-    with st.spinner("Searching..."):
-        docs = query.query_cortex(user_question)
-        answer = query.generate_answer(user_question, docs)
+    cursor.execute(f"""
+        DECLARE query STRING;
+        DECLARE query_vec VECTOR(FLOAT, 768);
+        DECLARE context STRING;
+        DECLARE final_prompt STRING;
+        DECLARE response STRING;
 
-    st.subheader("📌 Answer")
-    st.success(answer)
+        SET query = '{query}';
+        SET query_vec = VECTOR_EMBED('e5-base', :query);
 
-    with st.expander("📄 Retrieved context"):
-        for i, doc in enumerate(docs, 1):
-            st.markdown(f"**Document {i}:**\n{doc}\n---")
+        SET context = (
+            SELECT ARRAY_TO_STRING(ARRAY_AGG(content), '\n\n')
+            FROM (
+                SELECT content
+                FROM documents
+                ORDER BY VECTOR_COSINE_SIMILARITY(embedding, :query_vec) DESC
+                LIMIT 5
+            )
+        );
+
+        SET final_prompt = CONCAT(
+            'Usa los siguientes documentos personales para responder la pregunta del usuario.\n\nDocumentos:\n',
+            :context,
+            '\n\nPregunta: ', :query
+        );
+
+        SET response = CORTEX.COMPLETE(
+            MODEL_NAME => 'snowflake-arctic',
+            PROMPT => :final_prompt,
+            TEMPERATURE => 0.3,
+            MAX_TOKENS => 1024
+        );
+
+        SELECT :response AS answer;
+    """)
+
+    result = cursor.fetchone()
+    st.markdown("### 💬 Respuesta:")
+    st.write(result[0])
