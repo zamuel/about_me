@@ -1,0 +1,6 @@
+PyYAML
+pdfminer.six
+openai
+cortex-python
+python-dotenv
+streamlit
