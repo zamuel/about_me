@@ -1,0 +1,12 @@
+# Ignorar archivo de variables de entorno
+.env
+
+# Carpetas temporales
+__pycache__/
+*.pyc
+
+# Archivos de log
+*.log
+
+# Cache de Streamlit
+.streamlit/
