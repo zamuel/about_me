@@ -1,0 +1,16 @@
+name: Deploy to Preprod
+
+on:
+  push:
+    branches:
+      - preprod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Simulated Preprod Deployment
+        run: echo "🚀 Deploying to Preproduction Environment..."
