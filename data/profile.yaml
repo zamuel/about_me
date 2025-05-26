@@ -1,0 +1,22 @@
+name: Jane Doe
+title: Data Engineer
+location: Remote / Europe
+expected_salary_usd: 90000-110000
+education:
+  - degree: B.Sc. in Computer Science
+    university: Technical University of Berlin
+    year: 2018
+experience:
+  - role: Data Engineer
+    company: TechCorp
+    duration: 3 years
+    description: Built data pipelines using Snowflake, Airflow and Python.
+skills:
+  - Python
+  - Snowflake
+  - PySpark
+  - SQL
+  - Streamlit
+languages:
+  - English (C1)
+  - Spanish (B2)
