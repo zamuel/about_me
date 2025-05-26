@@ -4,3 +4,4 @@ openai
 cortex-python
 python-dotenv
 streamlit
+snowflake-connector-python
